@@ -1,0 +1,40 @@
+syntax = "proto2";
+
+package foo.ext;
+
+import "foo.proto";
+
+enum MessageType {
+  ECHO_REQUEST = 100;
+  ECHO_RESPONSE = 101;
+  FOO1_REQUEST = 102;
+  FOO1_RESPONSE = 103;
+  FOO2_REQUEST = 104;
+  FOO2_RESPONSE = 105;
+  SIMPLE_RESPONSE = 999;
+}
+
+extend foo.Body {
+    optional EchoRequest echo_request = 100;
+    optional EchoResponse echo_response = 101;
+    optional FooRequest foo1_request = 102;
+    optional FooResponse foo1_response = 103;
+    optional FooRequest foo2_request = 104;
+    optional FooResponse foo2_response = 105;
+    optional SimpleResponse simple_response = 999;
+};
+
+message EchoRequest {
+  required string msg = 1;
+};
+
+message EchoResponse {
+  required string msg = 1;
+};
+
+message FooRequest {
+};
+
+message FooResponse {
+  required Rc rc = 1;
+};

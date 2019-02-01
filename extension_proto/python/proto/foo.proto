@@ -1,0 +1,14 @@
+package foo;
+
+message Message {
+    required Header header = 1;
+    required Body body = 2;
+};
+
+message Header {
+    required uint32 type = 1; 
+};
+
+message Body {
+    extensions 1 to max;
+};
