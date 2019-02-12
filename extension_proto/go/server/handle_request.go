@@ -5,9 +5,10 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+	ufmessage "gitlab.ucloudadmin.com/udb/uframework/message"
 	"gitlab.ucloudadmin.com/udb/uframework/message/protobuf/proto"
 
-	"proto_foo/proto/foo"
+	"gitlab.ucloudadmin.com/udb/proto_go/proto/ucloud"
 )
 
 type HandlerFunc func(reqBodyItf interface{}) (respBodyItf interface{})
@@ -31,8 +32,8 @@ func HandleRequest(msgChan chan []byte, msg interface{}) {
 	}()
 
 	// pickup handler info for this request
-	req := msg.(*foo.Message)
-	reqID := req.GetHeader().GetType()
+	req := msg.(*ucloud.UMessage)
+	reqID := req.GetHead().GetMessageType()
 	handlerInfo, ok := HandlerInfoMap[reqID]
 	if !ok {
 		err = errors.Errorf("no handler info registered for %d", reqID)
@@ -51,11 +52,16 @@ func HandleRequest(msgChan chan []byte, msg interface{}) {
 	respBodyItf := f(reqBodyItf)
 
 	// prepare response
-	resp := &foo.Message{
-		Header: &foo.Header{Type: proto.Int32(respID)},
-		Body:   &foo.Body{},
+	resp, err := ufmessage.MakeResponse(req, respID)
+	if err != nil {
+		err = errors.Wrap(err, "failed to make response")
+		return
 	}
-	proto.SetExtension(resp.GetBody(), MessageBodyExtensions[respID], respBodyItf)
+	err = proto.SetExtension(resp.GetBody(), MessageBodyExtensions[respID], respBodyItf)
+	if err != nil {
+		err = errors.Wrap(err, "failed to set extension")
+		return
+	}
 
 	// send back response
 	buffer, err := proto.Marshal(resp)

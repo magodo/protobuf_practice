@@ -2,8 +2,10 @@ package main
 
 import (
 	"log"
+	"net"
 	"reflect"
 	"strings"
+	"time"
 
 	"github.com/pkg/errors"
 
@@ -11,7 +13,6 @@ import (
 
 	_ "gitlab.ucloudadmin.com/udb/proto_go/proto/ucloud/udemo"
 
-	ufcommon "gitlab.ucloudadmin.com/udb/uframework/common"
 	ufmessage "gitlab.ucloudadmin.com/udb/uframework/message"
 	"gitlab.ucloudadmin.com/udb/uframework/message/protobuf/proto"
 	ufnet "gitlab.ucloudadmin.com/udb/uframework/net"
@@ -28,8 +29,8 @@ func DefaultValidater(resp *ucloud.UMessage) error {
 	}
 	vResp := reflect.ValueOf(respBodyRaw).Elem()
 	vRc := vResp.FieldByName("Rc").Elem()
-	if *(vRc.FieldByName("RetCode").Interface().(*int32)) != 0 {
-		return errors.New(*(vRc.FieldByName("RetMessage").Interface().(*string)))
+	if *(vRc.FieldByName("Retcode").Interface().(*int32)) != 0 {
+		return errors.New(*(vRc.FieldByName("ErrorMessage").Interface().(*string)))
 	}
 	return nil
 }
@@ -37,10 +38,9 @@ func DefaultValidater(resp *ucloud.UMessage) error {
 var MessageBodyExtensions map[int32]*proto.ExtensionDesc
 
 // if f == nil, it means no response is checked
-func SendMessage(reqID int32, reqBody interface{}, f ValidateFunction) error {
+func SendMessage(dest net.TCPAddr, reqID int32, reqBody interface{}, uuid string, timeout time.Duration, f ValidateFunction) error {
 
-	uuid := ufcommon.NewUUIDV4()
-	req := ufmessage.NewMessage(reqID, uuid.String(), false, 1, 0, "")
+	req := ufmessage.NewMessage(reqID, uuid, false, 1, 0, "")
 	reqBodyExt := MessageBodyExtensions[reqID]
 	proto.SetExtension(req.GetBody(), reqBodyExt, reqBody)
 	reqRaw, err := proto.Marshal(req)
@@ -49,10 +49,10 @@ func SendMessage(reqID int32, reqBody interface{}, f ValidateFunction) error {
 	}
 
 	if f == nil {
-		return ufnet.SendTCPRequestNoResponse(serverAddress.IP.String(), serverAddress.Port, reqRaw, 1)
+		return ufnet.SendTCPRequestNoResponse(dest.IP.String(), dest.Port, reqRaw, uint32(timeout.Seconds()))
 	}
 
-	respRaw, err := ufnet.SendTCPRequest(serverAddress.IP.String(), serverAddress.Port, reqRaw, 1)
+	respRaw, err := ufnet.SendTCPRequest(dest.IP.String(), dest.Port, reqRaw, uint32(timeout.Seconds()))
 	if err != nil {
 		return err
 	}

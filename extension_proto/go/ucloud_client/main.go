@@ -2,14 +2,13 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"log"
 	"net"
-	"reflect"
+	"time"
 
 	"gitlab.ucloudadmin.com/udb/proto_go/proto/ucloud/udemo"
 
-	"gitlab.ucloudadmin.com/udb/proto_go/proto/ucloud"
+	ufcommon "gitlab.ucloudadmin.com/udb/uframework/common"
 	"gitlab.ucloudadmin.com/udb/uframework/message/protobuf/proto"
 )
 
@@ -18,22 +17,9 @@ var serverAddress net.TCPAddr
 func main() {
 	parseArgs()
 
-	validater := func(resp *ucloud.UMessage) error {
-		respID := resp.GetHead().GetMessageType()
-		respBodyExt := MessageBodyExtensions[respID]
-		respBodyRaw, err := proto.GetExtension(resp.GetBody(), respBodyExt)
-		if err != nil {
-			return err
-		}
-		vResp := reflect.ValueOf(respBodyRaw).Elem()
-		vId := vResp.FieldByName("Id").Elem()
-		fmt.Println((vId.Interface().(string)))
-		return nil
-	}
-
 	var err error
-	err = SendMessage(udemo.MessageType_value["MY_ECHO_REQUEST"], &udemo.MyEchoRequest{Id: proto.String("0"), Name: proto.String("foo")}, validater)
 
+	err = SendMessage(serverAddress, udemo.MessageType_value["MY_ECHO_REQUEST"], &udemo.MyEchoRequest{Id: proto.String("0"), Name: proto.String("foo")}, ufcommon.NewUUIDV4().String(), time.Second, DefaultValidater)
 	if err != nil {
 		log.Fatal(err)
 	}

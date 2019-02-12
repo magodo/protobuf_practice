@@ -5,7 +5,7 @@ import (
 
 	"fmt"
 
-	foo "proto_foo/proto/foo"
+	"gitlab.ucloudadmin.com/udb/proto_go/proto/ucloud"
 
 	"gitlab.ucloudadmin.com/udb/uframework/message/protobuf/proto"
 	ufnet "gitlab.ucloudadmin.com/udb/uframework/net"
@@ -16,7 +16,7 @@ func onDataIn(c *ufnet.TcpConnection, msg []byte) {
 	fmt.Println("on data in")
 	req := parseMsg(msg)
 	fmt.Printf("receive message from %v:\n%v\n", c.Conn().RemoteAddr(), proto.MarshalTextString(req))
-	message_type := req.GetHeader().GetType()
+	message_type := req.GetHead().GetMessageType()
 	task, err := uftask.NewTCPTask(int32(message_type))
 	if err != nil {
 		fmt.Printf("new task fail: %+v", err)
@@ -36,8 +36,8 @@ func onDataOut(c net.Conn, msg []byte) {
 	fmt.Printf("Send message [%s => %s]:\n%v", c.LocalAddr(), c.RemoteAddr(), proto.MarshalTextString(data))
 }
 
-func parseMsg(msgRaw []byte) *foo.Message {
-	msg := new(foo.Message)
+func parseMsg(msgRaw []byte) *ucloud.UMessage {
+	msg := new(ucloud.UMessage)
 	proto.Unmarshal(msgRaw, msg)
 	return msg
 

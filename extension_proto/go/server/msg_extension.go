@@ -1,8 +1,9 @@
 package main
 
 import (
-	"proto_foo/proto/foo"
 	"strings"
+
+	"gitlab.ucloudadmin.com/udb/proto_go/proto/ucloud"
 
 	"gitlab.ucloudadmin.com/udb/uframework/message/protobuf/proto"
 )
@@ -32,5 +33,5 @@ func getMsgExtension(msgFullName string) (extension *proto.ExtensionDesc) {
 }
 
 func init() {
-	MessageBodyExtensions = proto.RegisteredExtensions((*foo.Body)(nil))
+	MessageBodyExtensions = proto.RegisteredExtensions((*ucloud.Body)(nil))
 }
