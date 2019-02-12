@@ -4,6 +4,7 @@ import (
 	"log"
 	"time"
 
+	"git.ucloudadmin.com/udb/v2/common"
 	"github.com/pkg/errors"
 	ufmessage "gitlab.ucloudadmin.com/udb/uframework/message"
 	"gitlab.ucloudadmin.com/udb/uframework/message/protobuf/proto"
@@ -41,10 +42,11 @@ func HandleRequest(msgChan chan []byte, msg interface{}) {
 	}
 	f, respID := handlerInfo.F, handlerInfo.ResponseID
 
+	validReqID, _ := common.GetMessageGrayInfo(reqID)
 	// extract the request body
-	reqBodyItf, err := proto.GetExtension(req.GetBody(), MessageBodyExtensions[reqID])
+	reqBodyItf, err := proto.GetExtension(req.GetBody(), MessageBodyExtensions[validReqID])
 	if err != nil {
-		err = errors.Wrapf(err, "failed to get extension of request: %d", reqID)
+		err = errors.Wrapf(err, "failed to get extension of request: %d", validReqID)
 		return
 	}
 

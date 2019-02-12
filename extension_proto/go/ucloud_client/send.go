@@ -9,6 +9,7 @@ import (
 
 	"github.com/pkg/errors"
 
+	"git.ucloudadmin.com/udb/v2/common"
 	"gitlab.ucloudadmin.com/udb/proto_go/proto/ucloud"
 
 	_ "gitlab.ucloudadmin.com/udb/proto_go/proto/ucloud/udemo"
@@ -38,9 +39,10 @@ func DefaultValidater(resp *ucloud.UMessage) error {
 var MessageBodyExtensions map[int32]*proto.ExtensionDesc
 
 // if f == nil, it means no response is checked
-func SendMessage(dest net.TCPAddr, reqID int32, reqBody interface{}, uuid string, timeout time.Duration, f ValidateFunction) error {
+func SendCheckUMessage(dest net.TCPAddr, realReqID int32, reqBody interface{}, uuid string, timeout time.Duration, f ValidateFunction) error {
 
-	req := ufmessage.NewMessage(reqID, uuid, false, 1, 0, "")
+	reqID, _ := common.GetMessageGrayInfo(realReqID)
+	req := ufmessage.NewMessage(realReqID, uuid, false, 1, 0, "")
 	reqBodyExt := MessageBodyExtensions[reqID]
 	proto.SetExtension(req.GetBody(), reqBodyExt, reqBody)
 	reqRaw, err := proto.Marshal(req)

@@ -8,6 +8,7 @@ import (
 
 	"gitlab.ucloudadmin.com/udb/proto_go/proto/ucloud/udemo"
 
+	"git.ucloudadmin.com/udb/v2/common"
 	ufcommon "gitlab.ucloudadmin.com/udb/uframework/common"
 	"gitlab.ucloudadmin.com/udb/uframework/message/protobuf/proto"
 )
@@ -19,9 +20,14 @@ func main() {
 
 	var err error
 
-	err = SendMessage(serverAddress, udemo.MessageType_value["MY_ECHO_REQUEST"], &udemo.MyEchoRequest{Id: proto.String("0"), Name: proto.String("foo")}, ufcommon.NewUUIDV4().String(), time.Second, DefaultValidater)
+	err = SendCheckUMessage(serverAddress, udemo.MessageType_value["MY_ECHO_REQUEST"], &udemo.MyEchoRequest{Id: proto.String("0"), Name: proto.String("foo")}, ufcommon.NewUUIDV4().String(), time.Second, DefaultValidater)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+	}
+
+	err = SendCheckUMessage(serverAddress, common.GenerateGrayMessageType(udemo.MessageType_value["MY_ECHO_REQUEST"], 255), &udemo.MyEchoRequest{Id: proto.String("0"), Name: proto.String("foo")}, ufcommon.NewUUIDV4().String(), time.Second, DefaultValidater)
+	if err != nil {
+		log.Println(err)
 	}
 }
 

@@ -5,12 +5,13 @@ import (
 
 	"math/rand"
 
+	"git.ucloudadmin.com/udb/v2/common"
 	"gitlab.ucloudadmin.com/udb/proto_go/proto/ucloud"
 	"gitlab.ucloudadmin.com/udb/proto_go/proto/ucloud/udemo"
 	"gitlab.ucloudadmin.com/udb/uframework/message/protobuf/proto"
 )
 
-func Echo(reqBodyItf interface{}) interface{} {
+func EchoGray(reqBodyItf interface{}) interface{} {
 	reqBody := reqBodyItf.(*udemo.MyEchoRequest)
 
 	Rc := &ucloud.ResponseCode{}
@@ -23,7 +24,7 @@ func Echo(reqBodyItf interface{}) interface{} {
 
 	respBody := &udemo.MyEchoResponse{
 		Id:   proto.String(reqBody.GetId()),
-		Name: proto.String(reqBody.GetName()),
+		Name: proto.String(reqBody.GetName() + " (gray)"),
 		Rc:   Rc,
 	}
 	return respBody
@@ -31,8 +32,8 @@ func Echo(reqBodyItf interface{}) interface{} {
 
 func init() {
 	// register handler info
-	HandlerInfoMap[udemo.MessageType_value["MY_ECHO_REQUEST"]] = HandlerInfo{
-		F:          Echo,
+	HandlerInfoMap[common.GenerateGrayMessageType(udemo.MessageType_value["MY_ECHO_REQUEST"], 255)] = HandlerInfo{
+		F:          EchoGray,
 		ResponseID: udemo.MessageType_value["MY_ECHO_RESPONSE"],
 		Timeout:    5 * time.Second,
 	}
